@@ -12,7 +12,7 @@ gen mon2gdp = money/gdp
 
 // CHANGE NEEDED: subplot titles should be country names
 xtline cred2gdp mon2gdp
-graph export "./trend.png"
+// graph export "./trend.png", replace
 // ytitle(Credit and money over time across countries) ///
 // xtitle(Year) ///
 // graphregion(fcolor(white) ///
@@ -33,7 +33,10 @@ logit crisisJST l(1/5).g_rcred if year<=1984
 predict yhat_baselineOut_cred
 
 // export to csv for plotting in Python
-export delimited year country crisisJST yhat* if year>1984 using "roc_raw_in_out.csv", replace
+// export delimited year country crisisJST yhat* if year>1984 using "roc_raw_in_out.csv", replace
+
+// roccurve crisisJST yhat_baselineIn_cred yhat_baselineOut_cred if year>1984
+// comproc crisisJST yhat_baselineIn_cred yhat_baselineOut_cred if year>1984
 
 * 1.4 Compare
 local yrs 1984 2017
@@ -63,6 +66,13 @@ foreach iyear in `yrs' {
 // export to csv for plotting in Python
 export delimited year country crisisJST yhat* using "roc_raw_all_in.csv", replace
 export delimited year country crisisJST yhat* if year>1984 using "roc_raw_all_out.csv", replace
+
+la var yhat_baselineIn_cred "Hairtai"
+roccurve crisisJST yhat*2017
+roccurve crisisJST yhat*1984 if year>1984
+
+roccomp crisisJST yhat_baselineIn_cred yhat_baselineOut_cred, graph summary
+roccomp crisisJST yhat_baselineIn_cred yhat_baselineOut_cred, graph summary legend(on)
 
 /* roctab crisisJST yhat1, graph
 roctab crisisJST yhat2, graph
