@@ -13,8 +13,8 @@ gen mon2gdp = money/gdp
 // CHANGE NEEDED: subplot titles should be country names
 xtline cred2gdp mon2gdp
 // graph export "./trend.png", replace
-// ytitle(Credit and money over time across countries) ///
-// xtitle(Year) ///
+ytitle(Credit and money over time across countries) ///
+xtitle(Year) ///
 // graphregion(fcolor(white) ///
 
 * 1.2 Model eval: 5 lag of real credit
