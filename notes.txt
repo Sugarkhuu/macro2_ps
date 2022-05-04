@@ -1,0 +1,15 @@
+https://www.statalist.org/forums/forum/general-stata-discussion/general/1482140-help-can-t-format-xtline-plot
+My issues are the following:
+I want to change the titles per graph from say "1" in the first graph to a text of my choosing.
+I can't get rid of the bottom note "Graphs by group(countryname)
+I want to change the label "EC_INDEX" to a text of my choosing.
+1. Add value labels
+2. Use the note("") option within the byopt() option
+3. Use the label option within legend().
+
+For example:
+Code:
+webuse grunfeld,clear
+label define mylabel 1 "AAA" 2 "BBB" 3 "CCC"
+label values com mylabel
+xtline invest kstock, byopt(note("")) legend(label(1 "My new label"))
