@@ -1,5 +1,4 @@
 // ssc install estout
-// net install st0154  // roc 
 // ssc install labutil // panel labels
 
 
@@ -21,7 +20,7 @@ gen mon2gdp = money/gdp
 xtline cred2gdp mon2gdp, /// 
 byopt(note("") title("Credit and Money Historical Trend (as share of GDP)")) ///
 legend(label(1 "Credit-to-GDP") label(2 "Money-to-GDP"))
-graph export "./trend.png", replace
+graph export "./figures/trend.png", replace
 
 
 
@@ -43,6 +42,7 @@ logit crisisJST l(1/5).g_rcred if year<=1984
 predict out_of_sample
 
 roccomp crisisJST in_sample out_of_sample if year>1984, graph summary title("ROC: Real credit growth")
+graph export "./figures/real_credit.png", replace
 
 * 1.4 Compare
 local yrs 1984 2017
@@ -60,6 +60,8 @@ foreach ipred in `preds' {
 }
 roccomp crisisJST `preds_nice_list' if year>1984, graph summary legend(size(vsmall)) title("Out-of-sample ROC curves (Reference year: 1984)")
 
+graph export "./figures/out_many.png", replace
+
 // In-sample
 drop `preds_nice_list'
 
@@ -72,7 +74,12 @@ foreach ipred in `preds' {
 }
 
 roccomp crisisJST `preds_nice_list' if year>1984, graph summary legend(size(vsmall)) title("In-sample ROC curves")
+graph export "./figures/in_many.png", replace
 
 // all predictors - Out-of-sample
 logit crisisJST l(1/5).eq_capgain l(1/5).housing_capgain l(1/5).bond_tr l(1/5).bill_rate l(1/5).ca if year <= 1984
 predict yhat_all_1984
+
+graph export "./figures/out_altogether.png", replace
+
+* 1.5 Compare
