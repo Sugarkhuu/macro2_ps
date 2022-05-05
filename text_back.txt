@@ -1,0 +1,198 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{domitian}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{indentfirst}
+\usepackage{setspace}
+\usepackage{misccorr}
+\usepackage{hyperref}
+\usepackage{lscape}
+\usepackage{tocloft}
+\usepackage{titling}
+\usepackage{minted}
+\usepackage{pdfpages}
+\usepackage{comment}
+\usepackage[toc,page]{appendix}
+\onehalfspacing
+\usepackage[left=2cm,right=2cm,
+    top=2cm,bottom=2cm,bindingoffset=0cm]{geometry}
+\usepackage{comment}
+\usepackage{graphicx,txfonts}
+\usepackage[toc,page]{appendix}
+\usepackage{listings} 
+\usepackage{color}
+
+
+\title{Macroeconomics II \\
+Problem Set 1}
+\author{Omer Erhan Erbis\\ 
+Jerome Pivard \\
+Sugarkhuu Radnaa}
+\date{6 May 2022}
+
+
+\begin{document}
+\maketitle
+
+\section*{Problem I}
+
+\begin{enumerate}
+
+\item[I.1]
+    Both credit and money as compared to GDP was more or less stable throughout the sample period except the notable upward trend since 1970s. 
+    
+    \begin{figure}[h!]
+        \caption{Credit-to-GDP and Money supply-to-GDP since 1870 in Advanced economies}
+        \centering
+        \includegraphics[scale=0.4]{trend.png}
+        \label{fig:q6}
+    \end{figure}
+
+This chart needs proper decoration. Not aware how do it in STATA yet. If you know, welcome, do it. 
+
+\item[I.2]
+
+The joint significance test of five lags of real credit growth results in $\chi^2=37.69, p = 0.0000$. Hence, it is not possible to reject the null hypothesis of jointly insignificant 5 lags for the standard significance levels. In other words, real credit growth lags are not able to predict crisis. 
+
+\item[I.3]
+
+Out-of-sample AUC score drops below 0.5 to 0.45 from in-sample score of 0.68. Hence, real credit growth as a predictor of crisis is not a very attractive candidate. 
+    \begin{figure}[h!]
+        \caption{In-sample and out-of-sample ROC curve, real credit growth (year 1984 demarcation point)}
+        \centering
+        \includegraphics[scale=0.4]{real_credit.png}
+        \label{fig:q6}
+    \end{figure}
+
+\item[I.4]
+
+In terms of in-sample classification performance, housing price changes (capital gain) has the highest AUC of 0.7. It may seems that equity price changes will predict crisis as it is usually associated with large macroeconomic fluctuations, it has AUC of 0.5, that is it has no predictive power at all. Other variables perform at least as well as the baseline, real credit growth. 
+
+    \begin{figure}[h!]
+        \caption{In-sample ROC curve for multiple indicators}
+        \centering
+        \includegraphics[scale=0.5]{out_many.png}
+        \label{fig:q6}
+    \end{figure}
+    
+    \begin{figure}[h!]
+        \caption{In-sample ROC curve for multiple indicators}
+        \centering
+        \includegraphics[scale=0.5]{in_many.png}
+        \label{fig:q6}
+    \end{figure}
+    
+Housing price changes stays the strongest out-of-sample classification indicator with an out-of-sample AUC of 0.65.  
+    \begin{figure}[h!]
+        \caption{Out-of-sample ROC curve for multiple indicators}
+        \centering
+        \includegraphics[scale=0.5]{out_altogether.png}
+        \label{fig:q6}
+    \end{figure}
+
+\item[I.5]
+
+No idea
+    
+    
+\clearpage
+\section*{Problem II}
+\item[II.]
+
+
+
+
+In all the questions that follow, we use empirical strategies based on local projections similar to that presented in Jorda, Schularick and Taylor (2013). In particular, we work on a similar yearly data covering 18 advanced economies since 1870 \footnote{The data can be found at the following link: https://www.macrohistory.net/database/#DownloadData}.
+
+
+\item[II.1]
+
+Firstly, we want to compare the paths of real GDP per capita over 5 years following normal recessions and financial recessions.
+
+Using the specification proposed in the exercise statement : 
+
+\begin{equation}
+\centering
+\Delta_h y^{k}_{i,t(r)+h} = \alpha_{i,h}^{k} + \beta_{h}^{k} N_{i,t} + \gamma_{h}^{k} F_{i,t} + u^{k}_{i,t+h}
+\end{equation}
+
+where $\alpha_{i,h}^{k}$ denote country fixed effects,  $N_{i,t}$ (resp. $F_{i,t}$) the normal (resp.financial) recession dummy variable, and $u^{k}_{i,t+h}$ the error term.
+
+We are working here with the log of gdp per capita as the dependent variable to be able to express results in terms of percentage changes, and remove the index k (because we only have a single dependent variable for this question), we perform a sequence of fixed effects regressions of the dependent variable (change in real GDP per capita from year 0 i.e. year of the peak t(r) to the h-th postpeak year, with h = 1,...,5)  on the treatment dummy variables (normal versus financial recession dummies, using the data from Schularick). The country fixed effects enable us to account for time-invariant characteristics of each country that could partly explain the differences between countries we observe in the data.
+
+
+
+%The CR(.) operator refers to the conditional cumulative path of a certain variable - the term 'conditional' referring to this discrete treatment variable mentioned above - that is to say the average cumulated response of the dependent variable across countries and recessions over 5 years, given shocks delta in the treatment dummy variable. 
+
+
+
+Performing these local projections, we get the following results over an horizon of five years after each peak. We have to be cautious in reading this table, since the "net effect" of the recession on our dependent variable is, for each type of recession, the sum of the associated coefficient (which are our betas and gammas) and the constant we get in the last line. For instance, two years after a peak (the lgdppc2 variable), normal recessions are associated to an evolution in the GDP per capita of -6.9 + 4.5 = -2.4 \%, whereas for a financial recession, this decline is -7.6 + 4.5 = -3.1 \%.  
+
+First and foremost, we unsurprisingly observe statistically significant negative effects of both types of recessions on the dependent variable over the five years period.
+More precisely, all these effects are negative for the first three lags, whereas for the last two lags, only the effects associated to the financial recession dummy remain negative. Besides, except for the first lag, the magnitude of these negative effects is always larger when it comes to financial recessions. Thus, these results confirm the findings in the literature that the path of financial recessions is deeper and longer than the path of normal recessions.  
+
+\newpage
+
+These results are mostly corroborating the findings from Jorda et al. that we studied in class. However, they do not completely match theirs, which could be explained by the fact that, unlike in Jorda et al.'s work, we didn't remove war periods from the database. We will assess this assumption by running the same regressions removing data from the war periods to get rid of some noise which could explain the difference. The main (small) difference when reading the table is that, contrary to their findings that the effect becomes positive starting the third year after the peak of a normal recession, we find here that the recession path is longer, with positive effects only arising the fourth year. In addition, this recovery path seems to be less strong than in the results we saw in class, with an increase in the GDP per capita of 1.5\% maximum against the 4.5\% increase they reported. Yet, these differences seem much less acute as far as financial recessions are concerned.
+
+
+%we integrated country fixed effects that did not appear in the specification they chose. Another possible source of variation is that
+
+
+\begin{table}
+   
+   \caption{Path of log real GDP per capita over the five years following the onset of normal (N) versus financial (F) recessions, keeping data from war peiods}
+\hspace{5 mm}
+\centering
+\input{results II.1.}
+\centering
+
+\end{table}
+
+Running the regressions again, but removing war periods, we find results that are even closer to those seen in class, which confirms our previous assumption. Indeed, as we can see in the graph (above/below), when we remove war years, the recovery seems a bit quicker in both cases, and the it seems much stronger, in particular in the case of normal recessions.
+
+
+
+\item[II.2]
+
+To investigate whether the cost of financial recessions has become more severe over time, we can divide the total observations over the whole period into several sub-periods of time (that we could denote t1,....,tn where n is the number of sub-periods considered), and then do the same regressions as in the previous question separately on each sub-period (i.e. on each sub-group of recessions r (denoted r1,...,rn), first considering the r1's from t1, then the r2's from t2...)... And we have to determine if the conditional cumulative path of our dependent variable varies between these separated regressions.
+
+To determine the sub-periods, we can draw on Schularick and Taylor (2012) and their work that highlights the existence of four eras of financial development, which amounts to assume already that the severity of these crisis will also depend on the business cycles, a notion that is pervasive in this field of the literature. Roughly speaking, and as evidenced by Jorda et al. in their paper, the sub-periods we can distinguish are from 1870 to the aftermath of WWI, the interwar period, the period subsequent to the Bretton Woods agreement and the associated fixed exchange rate system, and finally that ranging from the end of the system that it gave birth to the early 21th century.
+
+[Stata part + results]
+
+We should find that as finance became more developed, crisis have become more severe.
+
+II.3. In this question, we keep the same specification and only change the dependent impulse response variable y, which was GDP per capita in the first question, to here successively real per capita consumption, real per capita investment (which we have to construct by multiplying the investment-to-GDP ratio with the GDP per capita ratio), real interest rates, real credit (growth rate of real loans per capita being a possible proxy) and CPI inflation.
+
+Again, we get similar results to those in the paper already mentioned. In particular, normal recessions trigger lower losses in investment (less than a 5\% fall the first year) than in the onset of financial recessions (up to a 15\% fall after the third year, which is less harsh than in Jorda's results that show up to a 25\% fall ). In addition, the recovery is quicker in the case of normal recessions, since it takes approximatively five years to go back to a positive growth rate, whereas eight years are still not sufficient in the case of financial recessions. We find deeper and longer recessions overall compared to results in the literature, which is most likely due again to the inclusion of the war periods.
+
+
+II.4. In this question, the idea is to add a continuous treatment variable to the discrete one (the dummies we used before), and see how this affects our cumulative path variables. These latter being now grouped into y taken as a vector of these variables, including real GDP per capita, real consumption per capita, real investment per capita, real interest rates (short and long-term), as well as growth rate of real loans per capita and CPI inflation.
+
+The continuous treatment we can incorporate to our specification is a proxy for private debt, which could be the total loans to business variable for instance.
+
+Drawing again on Jorda et al. and their work on an excess credit variable used as continuous treatment, we can finally determine whether higher private debt goes hand in hand with deeper recessions.
+
+[Add the equation, which shows the interaction terms between the discrete and continuous treatment, like in Jorda's paper, and slide 13 of Lecture 4 too + Also use their Table 6 to compare with the results we get ]
+
+
+II.5. Similarly, the empirical strategy remains the same, except that here the additional treatment variable is discrete as well and not continuous, namely a dummy variable for the presence (1) or not (0) of a fixed exchange rate [if we can find or build such a variable]
+Otherwise we can also think in terms of time periods like in question 2, and compare between observations at the time of the Bretton Woods fixed exchange rate system, with observations of the other periods. 
+
+
+
+II.6. Drawing again on the papers we already mentioned a few times, another factor increasing the costs of crises could be for example leverage and more precisely the credit intensity of the boom (which can be proxied by an excess credit variable similar to that in Jorda et al., that is the percentage point per year change in the loans-to-GDP ratio in expansion). Besides, the asset price interaction should also probably be taken into account by adding a "bubble indicator". Adding a indicator of bank capital interacting with the financial dummy could also enable to investigate the effect of higher capital ratios on the costs of crises.
+
+
+
+\end{enumerate}
+
+
+
+
+
+
+
+\end{document}
