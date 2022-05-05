@@ -73,7 +73,7 @@ twoway ///
 		(line bF bN Years, lcolor(blue) ///
 		lpattern(solid) lwidth(thick)) /// 
 		(line Zero Years, lcolor(black)), legend(off) ///
-		title("1870-1914", color(black) size(medsmall)) ///
+		title("Cumulative Paths of Real GDP per Capita (1870-1914)", color(black) size(medsmall)) ///
 		ytitle("Percent", size(medsmall)) xtitle("Year", size(medsmall)) ///
 		graphregion(color(white)) plotregion(color(white))
 		
@@ -99,14 +99,14 @@ twoway ///
 		(line bF bN Years, lcolor(blue) ///
 		lpattern(solid) lwidth(thick)) /// 
 		(line Zero Years, lcolor(black)), legend(off) ///
-		title("1918-1939", color(black) size(medsmall)) ///
+		title("Cumulative Paths of Real GDP per Capita (1918-1937)", color(black) size(medsmall)) ///
 		ytitle("Percent", size(medsmall)) xtitle("Year", size(medsmall)) ///
 		graphregion(color(white)) plotregion(color(white))
 		
 		gr rename g_2 , replace
 
 qui forv h = 0/5 {
-xtreg lgdppc`h' N F if year> 1973 & year<= 1991, fe /*cluster(iso)*/
+xtreg lgdppc`h' N F if year> 1973 & year<= 1990, fe /*cluster(iso)*/
 replace bN = _b[N] + _b[_cons]                     if _n == `h'+1
 replace uN = _b[N] + _b[_cons] + 1.645* _se[N]  if _n == `h'+1
 replace dN = _b[N] + _b[_cons] - 1.645* _se[N]  if _n == `h'+1
@@ -124,7 +124,7 @@ twoway ///
 		(line bF bN Years, lcolor(blue) ///
 		lpattern(solid) lwidth(thick)) /// 
 		(line Zero Years, lcolor(black)), legend(off) ///
-		title("1974-1991", color(black) size(medsmall)) ///
+		title("Cumulative Paths of Real GDP per Capita (1974-1990)", color(black) size(medsmall)) ///
 		ytitle("Percent", size(medsmall)) xtitle("Year", size(medsmall)) ///
 		graphregion(color(white)) plotregion(color(white))
 		
@@ -150,7 +150,7 @@ twoway ///
 		(line bF bN Years, lcolor(blue) ///
 		lpattern(solid) lwidth(thick)) /// 
 		(line Zero Years, lcolor(black)), legend(off) ///
-		title("1991-2008", color(black) size(medsmall)) ///
+		title("Cumulative Paths of Real GDP per Capita (1991-2017)", color(black) size(medsmall)) ///
 		ytitle("Percent", size(medsmall)) xtitle("Year", size(medsmall)) ///
 		graphregion(color(white)) plotregion(color(white))
 		
@@ -166,6 +166,7 @@ twoway ///
 gr combine g_1 g_2 g_3 g_4 
 
 
+/*	
 
 *Separate graph for expansion period (Bretton Woods system)
 
@@ -189,12 +190,12 @@ twoway ///
 		(line bF bN Years, lcolor(blue) ///
 		lpattern(solid) lwidth(thick)) /// 
 		(line Zero Years, lcolor(black)), legend(off) ///
-		title("1945-1973", color(black) size(medsmall)) ///
+		title("Cumulative Paths of Real GDP per Capita (1945-1973)", color(black) size(medsmall)) ///
 		ytitle("Percent", size(medsmall)) xtitle("Year", size(medsmall)) ///
 		graphregion(color(white)) plotregion(color(white))
 		
 		
-
+*/
 
 
 
