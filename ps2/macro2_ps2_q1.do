@@ -5,9 +5,9 @@
 // install necessary packages 
 // ssc install estout
 // ssc install labutil // panel labels, labmask
-ssc install ivreg2, replace
-ssc install xtivreg2, replace
-ssc install ranktest, replace
+// ssc install ivreg2, replace
+// ssc install xtivreg2, replace
+// ssc install ranktest, replace
 
 
 clear all
@@ -16,42 +16,66 @@ cls
 * load data
 use "ps2\JSTdataset.dta"
 drop if year > 2013
-
-
 xtset ifs year // set as panel
 labmask ifs, values(country) // country names linked to ifs
 
+
+
+* 1.1
 gen z = dibaseF*peg*l.peg*openquinn/100
 gen d_stir = d.stir
-
+// F = 175.01 > much larger than 10. Stock-Yogo weak ID test 10% crit val 16.38
 eststo model: ivreg2 rgdppc (d_stir = z), first bw(5)
 regress d_stir z
-xtline d_stir z
 
-gen rgdp = rgdppc*pop
-gen lrgdppc = 100*ln(rgdppc)
-gen lrconpc = 100*ln(rconpc)
-gen linvpc    = 100*ln(iy) + lrgdppc
-gen lcpi    = 100*ln(cpi)
-gen lrhp = 100*ln(hpnom/cpi)
+graph twoway (scatter d_stir z) (lfitci d_stir z)
+
+
+* 1.2
+gen rgdp     = rgdppc*pop
+gen lrgdppc  = 100*ln(rgdppc)
+gen lrconpc  = 100*ln(rconpc)
+gen linvpc   = 100*ln(iy) + lrgdppc
+gen lcpi     = 100*ln(cpi)
+gen lcred    = 100*ln(tloans)
+gen lrhp     = 100*ln(hpnom/cpi)
+gen lstocks  = 100*ln(stocks)
 gen lrstocks = 100*ln(stocks/cpi)
 gen cred2gdp = tloans/gdp
-gen gdpusd = gdp/xrusd
-bysort year : egen w_gdp = total(gdpusd)
+gen gdpusd   = gdp/xrusd
+bysort year : egen w_gdp = total(gdpusd) // world gdp per year
 xtset ifs year // set as panel
 
-local y_list rgdp cpi tloans stocks
+local y_list rgdp lcpi tloans stocks
+local ctrl_list lrgdppc lrconpc linvpc lcpi ltrate lrhp lrstocks cred2gdp gdpusd // stir
 
 //creating fwd
 foreach x in `y_list' {
-	forv h = 0/5 {
-	gen `x'`h' = f`h'.`x' - `x'
+	forv h = 1/5 {
+	gen `x'`h' = ln(f`h'.`x') - ln(`x')
+	eststo model`x'`h': xtivreg2 `x'`h' l(0/2).d.(`ctrl_list') (d_stir = z), fe first bw(5) 
 		}
 }
 
-local ctrl_list lrgdppc lrconpc linvpc lcpi stir ltrate lrhp lrstocks cred2gdp gdpusd
-eststo model: ivreg2 rgdp l(0/2).d.(`ctrl_list') (d_stir = z), first bw(5)
+esttab, se
 
+* 2
+
+d_stir_usd = 
+global output = 
+international stock prices = 
+
+foreach x in `y_list' {
+	forv h = 1/5 {
+	gen `x'`h' = ln(f`h'.`x') - ln(`x')
+	eststo model`x'`h': xtivreg2 `x'`h' l(0/2).d.(`ctrl_list') (d_stir_usd = z), fe first bw(5) 
+		}
+}
+
+
+* 3 
+RR shock impact
+browse annualized_RRextended_shock 
 
 
 effects of monetary policy on GDP, CPI, credit, and
