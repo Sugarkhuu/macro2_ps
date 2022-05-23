@@ -8,7 +8,9 @@ ssc install estout
 clear all
 cls
 
+* load data
 use "fiscal_data1930s_Stata13.dta"
+tsset date
 
 // Generate 100*log of all, but irate and date
 ds date irate, not
@@ -16,10 +18,17 @@ foreach ivar of var `r(varlist)' {
 	gen l`ivar' = 100*ln(`ivar')
 }
 
-tsset date
+// plot gdp and govt
+tsline lgdp_pc, ytitle("") xtitle("") title("Real GDP per capita (100*log)", size(small))
+gr rename gdp, replace
+twoway (tsline lg_pc) (fpfit lg_pc date), ytitle("") xtitle("") title("Real Government Spending per capita and fitted trend (100*log)", size(small)) legend(off)
+gr rename govt, replace
+gr combine gdp govt
+gr export figures\govt.png, replace
 
-local y_list gdp_pc //g_pc
-local ctrl_list gdp_pc g_pc rev_pc // stir
+// Estimation
+local y_list lgdp_pc //g_pc
+local ctrl_list lgdp_pc lg_pc lrev_pc 
 
 foreach x in `y_list' {
 	forv h = 0/23 {
@@ -28,38 +37,17 @@ foreach x in `y_list' {
 }
 
 eststo clear
-cap drop b u d Years Zero
-gen Years = _n-1 if _n<=6
-gen Zero =  0    if _n<=6
-gen bN=0
-gen uN=0
-gen dN=0
-gen bF=0
-gen uF=0
-gen dF=0
+gen gdp_resp=0                // gdp response stored here
+gen months = _n-1 if _n < 25  // only first 24 months
 
 foreach x in `y_list' {
-qui forv h = 0/23 {
-eststo model`x'`h': regress `x'`h' g_pc l(1/6).d.(`ctrl_list')
-replace bN = -_b[g_pc]                     if _n == `h'+1
-replace uN = _b[g_pc] + _b[_cons] + 1.645* _se[g_pc]  if _n == `h'+1
-replace dN = _b[g_pc] + _b[_cons] - 1.645* _se[g_pc]  if _n == `h'+1
-replace bF = -_b[g_pc]                      if _n == `h'+1
-replace uF = _b[g_pc] + _b[_cons] + 1.645* _se[g_pc]  if _n == `h'+1
-replace dF = _b[g_pc] + _b[_cons] - 1.645* _se[g_pc]  if _n == `h'+1
-
-// replace bN = _b[g_pc] + _b[_cons]                     if _n == `h'+1
-// replace uN = _b[g_pc] + _b[_cons] + 1.645* _se[g_pc]  if _n == `h'+1
-// replace dN = _b[g_pc] + _b[_cons] - 1.645* _se[g_pc]  if _n == `h'+1
-// replace bF = _b[g_pc] + _b[_cons]                     if _n == `h'+1
-// replace uF = _b[g_pc] + _b[_cons] + 1.645* _se[g_pc]  if _n == `h'+1
-// replace dF = _b[g_pc] + _b[_cons] - 1.645* _se[g_pc]  if _n == `h'+1
-
+	qui forv h = 0/23 {
+		eststo model`x'`h': regress `x'`h' lg_pc l(1/6).d.(`ctrl_list')
+		replace gdp_resp = -_b[lg_pc] if _n == `h'+1
 eststo 
 }
-
-esttab, se
-
-twoway (line bF bN date, lcolor(blue) ///
-		lpattern(solid) lwidth(thick))
 }
+
+twoway (line gdp_resp months, lcolor(blue) ///
+		lpattern(solid) lwidth(thick)), ytitle("GDP (percentage)")
+gr export figures\gdp2govt.png, replace

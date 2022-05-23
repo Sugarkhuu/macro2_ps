@@ -13,26 +13,30 @@ ssc install ranktest, replace
 clear all
 cls
 
-// set trace on 
 * load data
 use "JSTdataset.dta"
-drop if year > 2013
-xtset ifs year // set as panel
+drop if year > 2013          // no sensible data in 2014-15
+xtset ifs year               // set as panel
 labmask ifs, values(country) // country names linked to ifs
 
 
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
 * 1.1
 gen z = dibaseF*peg*l.peg*openquinn/100
 lab var z "z (trilemma instrument, pp)"
 gen d_stir = d.stir
-// F = 175.01 > much larger than 10. Stock-Yogo weak ID test 10% crit val 16.38
-eststo model: ivreg2 rgdppc (d_stir = z), first bw(5)
-regress d_stir z
 
+// Weak instrument test: F = 175.01 > much larger than 10. Stock-Yogo weak ID test 10% crit val 16.38
+eststo model: ivreg2 rgdppc (d_stir = z), first
+// or simply
+regress d_stir z 
 
-// graph twoway (scatter d_stir z) (lfit d_stir z), ///
-//  	legend(off) ytitle("Change in Local short-term interest rate, pp")
-// graph export "figures/z2stir.png", replace
+// plot d_stir to z
+graph twoway (scatter d_stir z) (lfit d_stir z), ///
+   	legend(off) ytitle("Change in Local short-term interest rate, pp")
+graph export "figures/z2stir.png", replace
 
 * 1.2
 gen lrgdp    = 100*ln(rgdppc*pop)
@@ -49,19 +53,16 @@ gen gdpusd   = gdp/xrusd
 bysort year : egen w_gdp = total(gdpusd) // log world gdp per year
 gen lw_gdp = 100*ln(w_gdp)
 
+// stir of US in each panel unit
 bysort year : gen tmp = stir if country == "USA"  
-bysort year : egen stir_usd = total(tmp)          // log world gdp per year
-drop tmp
-bysort year : gen tmp = z if country == "USA"     // log world gdp per year
-bysort year : egen z_usd = total(tmp) 
-replace z_usd = . if z_usd == 0 
+bysort year : egen stir_usd = total(tmp)          
 
 xtset ifs year // set as panel
 gen d_stir_usd = d.stir_usd
-xtset ifs year // set as panel
 
+// output and control variable lists
 local y_list lrgdp lcpi lcred lstocks
-local ctrl_list lrgdppc lrconpc linvpc lcpi stir ltrate lrhp lrstocks cred2gdp lw_gdp 
+local ctrl_list lrgdppc lrconpc linvpc lcpi ltrate lrhp lrstocks cred2gdp lw_gdp  // stir
 
 //creating fwd
 foreach x in `y_list' {
@@ -70,27 +71,26 @@ foreach x in `y_list' {
 		}
 }
 
+// Fixed effect, bw chosen at 2 for two lags (similar for all the specs following) that could generate residual serial correlation. 
 eststo clear
-
 foreach x in `y_list' {
 	forv h = 0/4 {
-	eststo model`x'`h': xtivreg2 `x'`h' l(0/2).d.(`ctrl_list') (d_stir = z), fe first bw(5) 
+	eststo model`x'`h': xtivreg2 `x'`h' l(0/2).d.(`ctrl_list') l(1/2).d_stir (d_stir = z), fe first bw(2)
 		}
 }
 
+// Create table using C matrix for all models and all "h"
 esttab, se keep(d_stir)
-
 matrix C = r(coefs) // matrix list C
 eststo clear
 
-// shock and lag result table 
 local fwds 0 1 2 3 4
-local y_names 'GDP' "CPI" "Credit" "Stock_prices"  
+local y_names "GDP" "CPI" "Credit" "Stock_prices"  
 
-local i 0  // loop var on lags                    
+local i 0  // loop var on fwds                    
 foreach ifwd in `fwds' {
      local ++i
-     local j 0                     // loop var on shock
+     local j 0                     // loop var on depvar
 
      capture matrix drop b
      capture matrix drop se
@@ -113,30 +113,32 @@ title(`title') ///
 nonumbers nodepvars noobs ///
 mtitles("h=0" "h=1" "h=2" "h=3" "h=4") ///
 
-* 2
 
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+* 2
+// Dependent variable list
 local y_list lrgdp lstocks
 
 eststo clear
 foreach x in `y_list' {
 	forv h = 0/4 {
-	eststo model`x'`h': xtreg `x'`h' l(0/2).d.(`ctrl_list') l(1/2).d.stir_usd d_stir_usd if country != "USA", fe
+	eststo model`x'`h': xtreg `x'`h' l(0/2).d.(`ctrl_list') l(1/2).d.stir_usd d_stir_usd if country != "USA"
 		}
 }
 
 esttab, se keep(d_stir_usd)
-
 matrix C = r(coefs) // matrix list C
 eststo clear
 
-// shock and lag result table 
 local fwds 0 1 2 3 4
 local y_names "GDP" "Stock_prices"  
 
-local i 0  // loop var on lags                    
+local i 0  // loop var on fwds                   
 foreach ifwd in `fwds' {
      local ++i
-     local j 0                     // loop var on shock
+     local j 0                     // loop var on depvar
 
      capture matrix drop b
      capture matrix drop se
@@ -162,7 +164,12 @@ mtitles("h=0" "h=1" "h=2" "h=3" "h=4") ///
 
 
 
+
+//////////////////////////////////////////////////////////////////////////////////////////
 * 3 
+
+
+// without controls as the sample is short
 
 local y_list lrgdp lcpi
 local samples all pre85 post85
@@ -172,30 +179,28 @@ eststo clear
 foreach x in `y_list' {
 	forv h = 0/4 {
 		if "`isample'" == "all" {
-			eststo model`x'`h': ivreg2 `x'`h' l(0/2).`x' (d_stir = l(1/4).annualized_RRextended_shock  ) if country == "USA", first bw(5)
+			eststo model`x'`h': ivreg2 `x'`h' l(0/2).`x' (d_stir = l(1/4).annualized_RRextended_shock  ) if country == "USA", first bw(2)
 		} 
 		else if "`isample'" == "pre85" {
-			eststo model`x'`h': ivreg2 `x'`h' l(0/2).`x' (d_stir = l(1/4).annualized_RRextended_shock  ) if country == "USA" & year<1985, first bw(5)
+			eststo model`x'`h': ivreg2 `x'`h' l(0/2).`x' (d_stir = l(1/4).annualized_RRextended_shock  ) if country == "USA" & year<1985, first bw(2)
 		}
 		else {
-			eststo model`x'`h': ivreg2 `x'`h' l(0/2).`x' (d_stir = l(1/4).annualized_RRextended_shock  ) if country == "USA" & year>=1985, first bw(5)
+			eststo model`x'`h': ivreg2 `x'`h' l(0/2).`x' (d_stir = l(1/4).annualized_RRextended_shock  ) if country == "USA" & year>=1985, first bw(2)
 		}
 	}
 }
 
 esttab, se keep(d_stir)
-
 matrix C = r(coefs) // matrix list C
 eststo clear
 
-// shock and lag result table 
 local fwds 0 1 2 3 4
 local y_names "GDP" "CPI"  
 
-local i 0  // loop var on lags                    
+local i 0  // loop var on fwds                   
 foreach ifwd in `fwds' {
      local ++i
-     local j 0                     // loop var on shock
+     local j 0                     // loop var on depvar
 
      capture matrix drop b
      capture matrix drop se
