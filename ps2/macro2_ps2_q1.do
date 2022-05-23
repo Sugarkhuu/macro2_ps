@@ -1,18 +1,19 @@
-// Code for Problem 2, Macro II by Prof. Schularick
+// Code for Problem 2.1, Macro II by Prof. Schularick
 // done by Sugarkhuu, Omer, Jerome
 
 
 // install necessary packages 
-// ssc install estout
-// ssc install labutil // panel labels, labmask
-// ssc install ivreg2, replace
-// ssc install xtivreg2, replace
-// ssc install ranktest, replace
+ssc install estout
+ssc install labutil // panel labels, labmask
+ssc install ivreg2, replace
+ssc install xtivreg2, replace
+ssc install ranktest, replace
 
 
 clear all
 cls
 
+// set trace on 
 * load data
 use "JSTdataset.dta"
 drop if year > 2013
@@ -30,7 +31,7 @@ regress d_stir z
 
 
 // graph twoway (scatter d_stir z) (lfit d_stir z), ///
-// 	legend(off) ytitle("Change in Local short-term interest rate, pp")
+//  	legend(off) ytitle("Change in Local short-term interest rate, pp")
 // graph export "figures/z2stir.png", replace
 
 * 1.2
@@ -57,9 +58,10 @@ replace z_usd = . if z_usd == 0
 
 xtset ifs year // set as panel
 gen d_stir_usd = d.stir_usd
+xtset ifs year // set as panel
 
 local y_list lrgdp lcpi lcred lstocks
-local ctrl_list lrgdppc lrconpc linvpc lcpi ltrate lrhp lrstocks cred2gdp lw_gdp // stir
+local ctrl_list lrgdppc lrconpc linvpc lcpi stir ltrate lrhp lrstocks cred2gdp lw_gdp 
 
 //creating fwd
 foreach x in `y_list' {
@@ -68,11 +70,11 @@ foreach x in `y_list' {
 		}
 }
 
-/*
 eststo clear
+
 foreach x in `y_list' {
 	forv h = 0/4 {
-	eststo model`x'`h': xtivreg2 `x'`h' l(0/2).d.(`ctrl_list') l(1/2).d.stir (d_stir = z), fe first bw(5) 
+	eststo model`x'`h': xtivreg2 `x'`h' l(0/2).d.(`ctrl_list') (d_stir = z), fe first bw(5) 
 		}
 }
 
@@ -83,7 +85,7 @@ eststo clear
 
 // shock and lag result table 
 local fwds 0 1 2 3 4
-local y_names 'GDP' "CPI" "Credit" "Stock prices"  
+local y_names 'GDP' "CPI" "Credit" "Stock_prices"  
 
 local i 0  // loop var on lags                    
 foreach ifwd in `fwds' {
@@ -92,7 +94,6 @@ foreach ifwd in `fwds' {
 
      capture matrix drop b
      capture matrix drop se
-	 capture matrix drop f_stat
      foreach iy in `y_names' {
         local ++j
         matrix tmp = C[1, 3*(`i'-1) + 15*(`j'-1)+1]     // point estimate for n and shock
@@ -104,7 +105,7 @@ foreach ifwd in `fwds' {
 	 ereturn post b
 	 quietly estadd matrix se
 	 eststo a`i'                // each m=XX column ot the table is saved here
- }
+}
 
 local title = "Responses to 1 pp monetary shock in period h, 100*log change from year 0 baseline"
 esttab using tables\table_1_2.tex, replace  b(%5.2f) se(%5.2f) /// 
@@ -130,7 +131,7 @@ eststo clear
 
 // shock and lag result table 
 local fwds 0 1 2 3 4
-local y_names "GDP" "Stock prices"  
+local y_names "GDP" "Stock_prices"  
 
 local i 0  // loop var on lags                    
 foreach ifwd in `fwds' {
@@ -160,7 +161,7 @@ nonumbers nodepvars noobs ///
 mtitles("h=0" "h=1" "h=2" "h=3" "h=4") ///
 
 
-*/
+
 * 3 
 
 local y_list lrgdp lcpi
